@@ -32,8 +32,8 @@ async def update_lobby_message(chat_id, game):
         f"🎮 Игра #{game['session_id']} создана!\n"
         f"Ожидаем игроков...\n\n"
         f"Участники ({len(game['players'])}):\n{players_list}\n\n"
-        f"Другие игроки могут присоединиться командой /2_join\n"
-        f"Создатель может запустить игру командой /2_startgame"
+        f"Другие игроки могут присоединиться командой /join\n"
+        f"Создатель может запустить игру командой /startgame"
     )
 
     try:
@@ -138,25 +138,25 @@ def get_router(bot):
         help_text = (
             "Привет! Я бот для игры в слова! 🎮\n\n"
             "📋 Доступные команды:\n"
-            "/2_newgame - Создать новую игру\n"
-            "/2_join - Присоединиться к игре\n"
-            "/2_startgame - Запустить игру (только создатель игры)\n"
-            "/2_stop - Завершить игру (только создатель игры)\n"
-            "/2_rating - Показать рейтинг\n"
-            "/2_leave - Покинуть игру\n\n"
+            "/newgame - Создать новую игру\n"
+            "/join - Присоединиться к игре\n"
+            "/startgame - Запустить игру (только создатель игры)\n"
+            "/stop - Завершить игру (только создатель игры)\n"
+            "/rating - Показать рейтинг\n"
+            "/leave - Покинуть игру\n\n"
             "Как играть:\n"
-            "1. Создатель пишет /2_newgame\n"
-            "2. Другие игроки пишут /2_join\n"
-            "3. Создатель пишет /2_startgame\n"
+            "1. Создатель пишет /newgame\n"
+            "2. Другие игроки пишут /join\n"
+            "3. Создатель пишет /startgame\n"
             "4. Игроки по очереди называют слова\n"
             "5. Слово должно начинаться на последнюю букву предыдущего\n"
-            "6. Создатель пишет /2_stop чтобы завершить игру\n"
+            "6. Создатель пишет /stop чтобы завершить игру\n"
             "7. Игра автоматически завершается через 10 минут после начала\n"
         )
 
         await message.answer(help_text)
 
-    @router.message(Command("2_newgame"))
+    @router.message(Command("newgame"))
     async def cmd_newgame(message: types.Message, state: FSMContext):
 
         chat_id = message.chat.id
@@ -186,7 +186,7 @@ def get_router(bot):
         game = active_games[chat_id]
         await update_lobby_message(chat_id, game)
 
-    @router.message(Command("2_join"))
+    @router.message(Command("join"))
     async def cmd_join(message: types.Message):
 
         chat_id = message.chat.id
@@ -203,7 +203,7 @@ def get_router(bot):
 
         if chat_id not in active_games:
             response = await message.answer(
-                "❌ В этом чате нет активной игры. Создайте игру командой /2_newgame"
+                "❌ В этом чате нет активной игры. Создайте игру командой /newgame"
             )
             await asyncio.sleep(3)
             try:
@@ -236,7 +236,7 @@ def get_router(bot):
 
         await update_lobby_message(chat_id, game)
 
-    @router.message(Command("2_startgame"))
+    @router.message(Command("startgame"))
     async def cmd_startgame(message: types.Message):
 
         chat_id = message.chat.id
@@ -300,7 +300,7 @@ def get_router(bot):
 
         active_games[chat_id]["current_player"] = next_player_id
 
-    @router.message(Command("2_stop"))
+    @router.message(Command("stop"))
     async def cmd_stop(message: types.Message):
 
         chat_id = message.chat.id
@@ -331,7 +331,7 @@ def get_router(bot):
 
         await message.answer("🛑 Игра завершена создателем.")
 
-    @router.message(Command("2_rating"))
+    @router.message(Command("rating"))
     async def cmd_rating(message: types.Message):
 
         chat_id = message.chat.id
@@ -372,7 +372,7 @@ def get_router(bot):
         finally:
             conn.close()
 
-    @router.message(Command("2_leave"))
+    @router.message(Command("leave"))
     async def cmd_leave(message: types.Message):
 
         chat_id = message.chat.id

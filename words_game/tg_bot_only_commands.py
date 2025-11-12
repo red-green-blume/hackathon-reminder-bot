@@ -118,18 +118,18 @@ def get_router(bot):
     global active_games
     global bott
     bott = bot
-    active_games = {}
+    # active_games = {}
     logging.basicConfig(level=logging.INFO)
 
     asyncio.ensure_future(check_expired_games_periodically())
     router = Router()
     router.message.filter(ModeFilter("words"))
 
-    create_database("words_game.db")
-    create_tables("words_game.db")
+    create_database("words_game/words_game.db")
+    create_tables("words_game/words_game.db")
 
     @router.message(Command("/start"))
-    async def cmd_start(message: types.Message, state: FSMContext):
+    async def cmd_start(message: types.Message):
 
         user_id = message.from_user.id
         username = message.from_user.username or message.from_user.full_name
@@ -171,7 +171,7 @@ def get_router(bot):
 
         await state.clear()
 
-        session_id = add_game_session("words_game.db", chat_id, user_id)
+        session_id = add_game_session("words_game/words_game.db", chat_id, user_id)
 
         active_games[chat_id] = {
             "creator_id": user_id,
@@ -187,7 +187,7 @@ def get_router(bot):
         await update_lobby_message(chat_id, game)
 
     @router.message(Command("2_join"))
-    async def cmd_join(message: types.Message, state: FSMContext):
+    async def cmd_join(message: types.Message):
 
         chat_id = message.chat.id
         user_id = message.from_user.id
@@ -222,7 +222,7 @@ def get_router(bot):
         game["players"][user_id] = message.from_user.full_name
 
         order_join = len(game["players"])
-        add_game_player("words_game.db", session_id, user_id, order_join)
+        add_game_player("words_game/words_game.db", session_id, user_id, order_join)
 
         confirmation = await message.answer(
             f"✅ {message.from_user.full_name} присоединился к игре!"
@@ -237,7 +237,7 @@ def get_router(bot):
         await update_lobby_message(chat_id, game)
 
     @router.message(Command("2_startgame"))
-    async def cmd_startgame(message: types.Message, state: FSMContext):
+    async def cmd_startgame(message: types.Message):
 
         chat_id = message.chat.id
         user_id = message.from_user.id
@@ -301,7 +301,7 @@ def get_router(bot):
         active_games[chat_id]["current_player"] = next_player_id
 
     @router.message(Command("2_stop"))
-    async def cmd_stop(message: types.Message, state: FSMContext):
+    async def cmd_stop(message: types.Message):
 
         chat_id = message.chat.id
         user_id = message.from_user.id
@@ -323,16 +323,16 @@ def get_router(bot):
             await message.answer("❌ Игра уже завершена.")
             return
 
-        update_game_finish("words_game.db", session_id)
+        update_game_finish("words_game/words_game.db", session_id)
 
-        await announce_winner("words_game.db", session_id, chat_id, bot)
+        await announce_winner("words_game/words_game.db", session_id, chat_id, bot)
 
         del active_games[chat_id]
 
         await message.answer("🛑 Игра завершена создателем.")
 
     @router.message(Command("2_rating"))
-    async def cmd_rating(message: types.Message, state: FSMContext):
+    async def cmd_rating(message: types.Message):
 
         chat_id = message.chat.id
 
@@ -373,7 +373,7 @@ def get_router(bot):
             conn.close()
 
     @router.message(Command("2_leave"))
-    async def cmd_leave(message: types.Message, state: FSMContext):
+    async def cmd_leave(message: types.Message):
 
         chat_id = message.chat.id
         user_id = message.from_user.id
@@ -407,7 +407,7 @@ def get_router(bot):
 
         await message.answer(f"🚪 {message.from_user.full_name} вышел из игры")
 
-        deactivate_game_player("words_game.db", session_id, user_id)
+        deactivate_game_player("words_game/words_game.db", session_id, user_id)
 
         del game["players"][user_id]
 
@@ -423,7 +423,7 @@ def get_router(bot):
 
         if len(game["players"]) == 0:
             if session_status == "started":
-                update_game_finish("words_game.db", session_id)
+                update_game_finish("words_game/words_game.db", session_id)
 
             del active_games[chat_id]
 
@@ -433,7 +433,7 @@ def get_router(bot):
             if session_status == "waiting":
                 await update_lobby_message(chat_id, game)
 
-    async def handle_game_message(message: types.Message, state: FSMContext):
+    async def handle_game_message(message: types.Message):
 
         chat_id = message.chat.id
         user_id = message.from_user.id
@@ -485,7 +485,7 @@ def get_router(bot):
         )
 
     @router.message()
-    async def handle_messages(message: types.Message, state: FSMContext):
+    async def handle_messages(message: types.Message):
         chat_id = message.chat.id
 
         if not message.text:
@@ -522,14 +522,14 @@ async def check_expired_games_periodically():
 
                 winner_name = get_winner_and_update_leaders(DB_NAME, game_id)
                 if winner_name:
-                    await bot.send_message(
+                    await bott.send_message(
                         chat_id,
                         f"⏰ Время вышло! Игра автоматически завершена.\n\n"
                         f"Победитель: {winner_name} 🎉\n"
                         f"Игра длилась более 10 минут.",
                     )
                 else:
-                    await bot.send_message(
+                    await bott.send_message(
                         chat_id,
                         "⏰ Время вышло! Игра автоматически завершена.\n\n"
                         "Игра длилась более 10 минут.",

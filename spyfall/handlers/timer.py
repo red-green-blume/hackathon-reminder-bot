@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime, timedelta
 from aiogram import Bot
-from database import Database
+from spyfall.database import Database
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class GameTimer:
                     await self.bot.send_message(
                         chat_id,
                         "⏰ Time's up! The game has ended.\n"
-                        "Use /vote to start voting for the spy.",
+                        "Use /spy_vote to start voting for the spy.",
                     )
                     await self.stop_timer(game_id)
                     return

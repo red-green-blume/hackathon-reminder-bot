@@ -1,7 +1,7 @@
 import logging
 from aiogram import Bot
-from database import Database
-from game import GameManager
+from spyfall.database import Database
+from spyfall.game import GameManager
 import config
 
 logger = logging.getLogger(__name__)

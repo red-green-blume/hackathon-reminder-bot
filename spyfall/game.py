@@ -1,6 +1,6 @@
 import random
-from typing import List, Dict, Optional
-from database import Database
+from typing import Dict, Optional
+from spyfall.database import Database
 import config
 
 
@@ -28,7 +28,7 @@ class GameManager:
         if len(players) < 3:
             return None
 
-        location = random.choice(config.LOCATIONS)
+        location = random.choice(config.SPYFALL_LOCATIONS)
 
         spy = random.choice(players)
         await self.db.set_spy(game_id, spy["user_id"])

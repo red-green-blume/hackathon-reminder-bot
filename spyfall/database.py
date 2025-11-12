@@ -2,13 +2,14 @@ import aiosqlite
 import logging
 from typing import Optional, List, Dict
 from datetime import datetime
+
 import config
 
 logger = logging.getLogger(__name__)
 
 
 class Database:
-    def __init__(self, db_path: str = config.DATABASE_PATH):
+    def __init__(self, db_path: str = config.SPYFALL_DATABASE_PATH):
         self.db_path = db_path
 
     async def init_db(self):

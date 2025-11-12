@@ -1,9 +1,9 @@
 import logging
 from aiogram import Bot, F
 from aiogram.types import CallbackQuery, PollAnswer
-from database import Database
-from game import GameManager
-from handlers.voting import finish_voting
+from spyfall.database import Database
+from spyfall.handlers.voting import finish_voting
+from spyfall.game import GameManager
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ def register_callbacks(dp, bot: Bot, db: Database, game_manager: GameManager):
         await bot.send_message(
             callback.message.chat.id,
             f"❓ {asker_name} is asking {target_name} a question!\n\n"
-            f"{target_name}, please answer the question. When you're done, use /answer to pass the turn.",
+            f"{target_name}, please answer the question. When you're done, use /spy_answer to pass the turn.",
         )
 
         await callback.message.edit_text(f"✅ You chose to ask {target_name}!")

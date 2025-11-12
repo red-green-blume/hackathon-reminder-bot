@@ -2,7 +2,7 @@ import logging
 import re
 from aiogram import Bot, F
 from aiogram.types import Message
-from database import Database
+from spyfall.database import Database
 import config
 
 logger = logging.getLogger(__name__)

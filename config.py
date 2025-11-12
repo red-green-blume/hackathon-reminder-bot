@@ -4,15 +4,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
-DATABASE_PATH = "spy_game.db"
-GAME_DURATION = 300
-DICTIONARY_PATH = "slovarik.txt"
-WORDS_PER_PLAYER = 5
-WORD_BONUS_POINTS = 5
-WORD_PENALTY_POINTS = -10
 
-
-LOCATIONS = [
+SPYFALL_DATABASE_PATH = "spyfall/spy_game.db"
+SPYFALL_GAME_DURATION = 300
+SPYFALL_DICTIONARY_PATH = "spyfall/slovarik.txt"
+SPYFALL_WORDS_PER_PLAYER = 5
+SPYFALL_WORD_BONUS_POINTS = 5
+SPYFALL_WORD_PENALTY_POINTS = -10
+SPYFALL_LOCATIONS = [
     "Beach (Пляж)",
     "Hospital (Больница)",
     "School (Школа)",

@@ -108,7 +108,7 @@ async def finish_voting(
                 word_bonus = 0
 
                 if used_words_count > 0:
-                    word_bonus = used_words_count * config.SPYFALL_WORD_PENALTY_POINTS
+                    word_bonus = used_words_count * config.SPYFALL_WORD_BONUS_POINTS
                 else:
                     word_bonus = config.SPYFALL_WORD_PENALTY_POINTS
 

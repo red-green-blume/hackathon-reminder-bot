@@ -1,6 +1,6 @@
 from aiogram import Router, types
-from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
+from chat_modes import set_chat_mode, get_chat_mode
 
 router = Router()
 
@@ -18,7 +18,7 @@ async def choose_mode(message: types.Message):
 
 
 @router.message(lambda m: m.text in ["🎮 Шпион", "📚 Слова", "❓ Кто быстрее"])
-async def set_mode(message: types.Message, state: FSMContext):
+async def set_mode(message: types.Message):
     mode = None
     if "Шпион" in message.text:
         mode = "spy"
@@ -26,5 +26,6 @@ async def set_mode(message: types.Message, state: FSMContext):
         mode = "words"
     elif "Кто быстрее" in message.text:
         mode = "speedy_poll"
-    await state.update_data(mode=mode)
-    await message.answer(f"✅ Режим переключен на {message.text}")
+
+    set_chat_mode(message.chat.id, mode)
+    await message.answer(f"✅ Режим чата переключен на {message.text}")

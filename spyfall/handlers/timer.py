@@ -69,7 +69,7 @@ class GameTimer:
                     await self.bot.send_message(
                         chat_id,
                         "⏰ Time's up! The game has ended.\n"
-                        "Use /spy_vote to start voting for the spy.",
+                        "Use /vote to start voting for the spy.",
                     )
                     await self.stop_timer(game_id)
                     return

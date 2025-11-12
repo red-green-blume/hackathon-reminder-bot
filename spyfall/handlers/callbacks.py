@@ -92,7 +92,7 @@ def register_callbacks(dp, bot: Bot, db: Database, game_manager: GameManager):
         await bot.send_message(
             callback.message.chat.id,
             f"❓ {asker_name} is asking {target_name} a question!\n\n"
-            f"{target_name}, please answer the question. When you're done, use /spy_answer to pass the turn.",
+            f"{target_name}, please answer the question. When you're done, use /answer to pass the turn.",
         )
 
         await callback.message.edit_text(f"✅ You chose to ask {target_name}!")

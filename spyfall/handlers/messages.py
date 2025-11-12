@@ -27,10 +27,10 @@ def register_message_handlers(dp, bot: Bot, db: Database):
         if message.from_user.id not in player_ids:
             return
 
-        curr_player = db.get_current_player(active_game["game_id"])
-        target_player = db.get_target_player(active_game["game_id"])
+        curr_player = await db.get_current_player(active_game["game_id"])
+        target_player = await db.get_target_player(active_game["game_id"])
 
-        if message.from_user.id not in [curr_player.id, target_player.id]:
+        if message.from_user.id not in [curr_player, target_player]:
             return
 
         player_words = await db.get_player_words(
@@ -63,7 +63,7 @@ def register_message_handlers(dp, bot: Bot, db: Database):
                         message.chat.id,
                         f"✅ Great! You used the word '{word_data['word']}'\n"
                         f"📖 Translation: {translation}\n"
-                        f"🎁 You earned {config.WORD_BONUS_POINTS} bonus points!",
+                        f"🎁 You earned {config.SPYFALL_WORD_PENALTY_POINTS} bonus points!",
                     )
                 except Exception as e:
                     logger.error(

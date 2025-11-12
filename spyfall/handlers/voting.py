@@ -108,9 +108,9 @@ async def finish_voting(
                 word_bonus = 0
 
                 if used_words_count > 0:
-                    word_bonus = used_words_count * config.WORD_BONUS_POINTS
+                    word_bonus = used_words_count * config.SPYFALL_WORD_PENALTY_POINTS
                 else:
-                    word_bonus = config.WORD_PENALTY_POINTS
+                    word_bonus = config.SPYFALL_WORD_PENALTY_POINTS
 
                 await db.update_bonus_points(player["user_id"], word_bonus)
 

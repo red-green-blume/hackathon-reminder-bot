@@ -17,27 +17,27 @@ MODE_NAME = "spy"
 def register_commands(
     dp, bot: Bot, db: Database, game_manager: GameManager, dictionary: Dictionary, timer: GameTimer = None,
 ):
-    @dp.message(Command("spy_start"))
+    @dp.message(Command("start"))
     async def cmd_start(message: Message, state: FSMContext):
 
         """Start command"""
         await message.answer(
             "🎮 Welcome to Spyfall game!\n\n"
             "Commands:\n"
-            "/spy_newgame - create a new game\n"
-            "/spy_join - join the game\n"
-            "/spy_startgame - start the game (minimum 3 players)\n"
-            "/spy_gameinfo - game information\n"
-            "/spy_mylocation - check your location\n"
-            "/spy_ask - choose who to ask a question (when it's your turn)\n"
-            "/spy_answer - pass the turn after answering a question\n"
-            "/spy_vote - start voting (creates poll)\n"
-            "/spy_endgame - end the game\n"
-            "/spy_stats - your statistics\n"
-            "/spy_leaderboard - top players rating"
+            "/newgame - create a new game\n"
+            "/join - join the game\n"
+            "/startgame - start the game (minimum 3 players)\n"
+            "/gameinfo - game information\n"
+            "/mylocation - check your location\n"
+            "/ask - choose who to ask a question (when it's your turn)\n"
+            "/answer - pass the turn after answering a question\n"
+            "/vote - start voting (creates poll)\n"
+            "/endgame - end the game\n"
+            "/stats - your statistics\n"
+            "/leaderboard - top players rating"
         )
 
-    @dp.message(Command("spy_newgame"))
+    @dp.message(Command("newgame"))
     async def cmd_newgame(message: Message, state: FSMContext):
 
         """Create a new game"""
@@ -49,7 +49,7 @@ def register_commands(
         if active_game:
             await message.answer(
                 f"⚠️ There's already an active game in this chat (ID: {active_game['game_id']}).\n"
-                "Use /spy_endgame to finish it."
+                "Use /endgame to finish it."
             )
             return
 
@@ -61,10 +61,10 @@ def register_commands(
         await message.answer(
             f"✅ New game created! ID: {game_id}\n"
             f"👤 {message.from_user.first_name} joined the game.\n\n"
-            "Use /spy_join to join."
+            "Use /join to join."
         )
 
-    @dp.message(Command("spy_join"))
+    @dp.message(Command("join"))
     async def cmd_join(message: Message, state: FSMContext):
 
         """Join the game"""
@@ -74,7 +74,7 @@ def register_commands(
 
         active_game = await db.get_active_game(message.chat.id)
         if not active_game:
-            await message.answer("❌ No active game. Use /spy_newgame to create one.")
+            await message.answer("❌ No active game. Use /newgame to create one.")
             return
 
         if active_game["status"] != "waiting":
@@ -92,12 +92,12 @@ def register_commands(
             await message.answer(
                 f"✅ {message.from_user.first_name} joined the game!\n"
                 f"👥 Players: {len(players)}\n\n"
-                "Use /spy_startgame to start (minimum 3 players)."
+                "Use /startgame to start (minimum 3 players)."
             )
         else:
             await message.answer("⚠️ You're already in the game!")
 
-    @dp.message(Command("spy_startgame"))
+    @dp.message(Command("startgame"))
     async def cmd_startgame(message: Message, state: FSMContext):
 
         """Start the game"""
@@ -107,14 +107,14 @@ def register_commands(
 
         active_game = await db.get_active_game(message.chat.id)
         if not active_game:
-            await message.answer("❌ No active game. Use /spy_newgame to create one.")
+            await message.answer("❌ No active game. Use /newgame to create one.")
             return
 
         if active_game["status"] != "waiting":
             await message.answer("❌ Game has already started!")
             return
 
-        duration = config.GAME_DURATION
+        duration = config.SPYFALL_GAME_DURATION
         location = await game_manager.start_game(active_game["game_id"], duration)
         if not location:
             await message.answer("❌ Not enough players! Minimum 3 players.")
@@ -129,7 +129,7 @@ def register_commands(
 
         for player in players:
             try:
-                words = dictionary.get_random_words(config.WORDS_PER_PLAYER)
+                words = await dictionary.get_random_words(config.SPYFALL_WORDS_PER_PLAYER)
                 await db.add_player_words(
                     active_game["game_id"], player["user_id"], words
                 )
@@ -176,7 +176,7 @@ def register_commands(
                 f"⏰ Game duration: {duration // 60} minutes\n"
                 f"📍 Location has been chosen and sent to each player in private messages.\n\n"
                 f"🎯 It's {player_name}'s turn to ask a question!\n"
-                f"Use /spy_ask to choose who to ask."
+                f"Use /ask to choose who to ask."
             )
         else:
             await message.answer(
@@ -186,7 +186,7 @@ def register_commands(
                 f"📍 Location has been chosen and sent to each player in private messages."
             )
 
-    @dp.message(Command("spy_gameinfo"))
+    @dp.message(Command("gameinfo"))
     async def cmd_gameinfo(message: Message, state: FSMContext):
 
         """Game information"""
@@ -214,7 +214,7 @@ def register_commands(
             f"Players:\n{players_list}"
         )
 
-    @dp.message(Command("spy_mylocation"))
+    @dp.message(Command("mylocation"))
     async def cmd_mylocation(message: Message, state: FSMContext):
 
         """Check your location"""
@@ -240,7 +240,7 @@ def register_commands(
                 message.from_user.id, f"📍 Your location: {location}"
             )
 
-    @dp.message(Command("spy_ask"))
+    @dp.message(Command("ask"))
     async def cmd_ask(message: Message, state: FSMContext):
 
         """Choose who to ask a question"""
@@ -296,7 +296,7 @@ def register_commands(
             reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard),
         )
 
-    @dp.message(Command("spy_answer"))
+    @dp.message(Command("answer"))
     async def cmd_answer(message: Message, state: FSMContext):
 
         """Answer that you've been asked"""
@@ -324,7 +324,7 @@ def register_commands(
                 await message.answer(f"❌ You weren't asked! {target_name} was asked.")
             else:
                 await message.answer(
-                    "❌ No one is currently being asked. Use /spy_ask to ask someone first."
+                    "❌ No one is currently being asked. Use /ask to ask someone first."
                 )
             return
 
@@ -367,7 +367,7 @@ def register_commands(
         else:
             await message.answer(f"✅ {player_name} answered!")
 
-    @dp.message(Command("spy_vote"))
+    @dp.message(Command("vote"))
     async def cmd_vote(message: Message, state: FSMContext):
 
         """Start voting with poll"""
@@ -441,7 +441,7 @@ def register_commands(
             logger.error(f"Error creating poll: {e}")
             await message.answer("❌ Error creating poll. Please try again.")
 
-    @dp.message(Command("spy_endgame"))
+    @dp.message(Command("endgame"))
     async def cmd_endgame(message: Message, state: FSMContext):
 
         """End the game"""
@@ -460,7 +460,7 @@ def register_commands(
         await game_manager.finish_game(active_game["game_id"])
         await message.answer("✅ Game finished.")
 
-    @dp.message(Command("spy_stats"))
+    @dp.message(Command("stats"))
     async def cmd_stats(message: Message, state: FSMContext):
 
         """Show player statistics"""
@@ -517,7 +517,7 @@ def register_commands(
 
         await message.answer(stats_text)
 
-    @dp.message(Command("spy_leaderboard"))
+    @dp.message(Command("leaderboard"))
     async def cmd_leaderboard(message: Message, state: FSMContext):
 
         """Show leaderboard"""

@@ -16,7 +16,6 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_router(mode_switch.router)
-
     dp.include_router(speedy_translate.get_router())
     dp.include_router(words_game.get_router(bot))
     dp.include_router(spyfall.get_router(bot))

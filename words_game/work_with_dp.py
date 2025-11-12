@@ -414,7 +414,8 @@ def check_and_finish_expired_games(db_name):
 
 if __name__ == "__main__":
     # print()
+    pass
     # create_database("words_game.db")
     # create_tables("words_game.db")
     # delete_table("words_game.db", "game_session")
-    clear_database("words_game.db")
+    # clear_database("words_game.db")

@@ -15,6 +15,7 @@ from words_game.work_with_dp import *
 
 MODE_NAME = "words"
 
+bott = None
 
 class GameStates(StatesGroup):
     waiting_players = State()
@@ -22,12 +23,6 @@ class GameStates(StatesGroup):
 
 
 DB_NAME = "words_game/words_game.db"
-load_dotenv()
-BOT_TOKEN = "8530593033:AAEU-qlMM28wSsboRZtr6mnwkU-TbAEsBm8"
-
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
-
 active_games = {}
 
 
@@ -43,16 +38,16 @@ async def update_lobby_message(chat_id, game):
 
     try:
         if game.get("lobby_message_id"):
-            await bot.edit_message_text(
+            await bott.edit_message_text(
                 chat_id=chat_id, message_id=game["lobby_message_id"], text=message_text
             )
         else:
-            message = await bot.send_message(chat_id, message_text)
+            message = await bott.send_message(chat_id, message_text)
             game["lobby_message_id"] = message.message_id
 
     except Exception as e:
         # print(f"Ошибка при обновлении лобби: {e}")
-        message = await bot.send_message(chat_id, message_text)
+        message = await bott.send_message(chat_id, message_text)
         game["lobby_message_id"] = message.message_id
 
 
@@ -121,12 +116,17 @@ async def announce_winner(db_name, session_id, current_chat_id, bot):
 
 def get_router(bot):
     global active_games
+    global bott
+    bott = bot
     active_games = {}
     logging.basicConfig(level=logging.INFO)
 
     asyncio.ensure_future(check_expired_games_periodically())
     router = Router()
     router.message.filter(ModeFilter("words"))
+
+    create_database("words_game.db")
+    create_tables("words_game.db")
 
     @router.message(Command("/start"))
     async def cmd_start(message: types.Message, state: FSMContext):
@@ -486,9 +486,6 @@ def get_router(bot):
 
     @router.message()
     async def handle_messages(message: types.Message, state: FSMContext):
-        if not await ensure_mode(message, state, False):
-            return
-
         chat_id = message.chat.id
 
         if not message.text:
@@ -546,13 +543,14 @@ async def check_expired_games_periodically():
 
 
 async def main():
-    global active_games
-    active_games = {}
-    logging.basicConfig(level=logging.INFO)
-
-    asyncio.ensure_future(check_expired_games_periodically())
-
-    await dp.start_polling(bot)
+    # global active_games
+    # active_games = {}
+    # logging.basicConfig(level=logging.INFO)
+    #
+    # asyncio.ensure_future(check_expired_games_periodically())
+    #
+    # await dp.start_polling(bot)
+    pass
 
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ def register_commands(
             "/mylocation - check your location\n"
             "/ask - choose who to ask a question (when it's your turn)\n"
             "/answer - pass the turn after answering a question\n"
+            "/guess - spy tries to guess the location\n"
             "/vote - start voting (creates poll)\n"
             "/endgame - end the game\n"
             "/stats - your statistics\n"
@@ -366,6 +367,49 @@ def register_commands(
             )
         else:
             await message.answer(f"✅ {player_name} answered!")
+
+    @dp.message(Command("guess"))
+    async def cmd_guess(message: Message, state: FSMContext):
+
+        """Allow spy to guess the location"""
+        if message.chat.type == "private":
+            await message.answer("❌ This command is available only in group chats!")
+            return
+
+        active_game = await db.get_active_game(message.chat.id)
+        if not active_game:
+            await message.answer("❌ No active game.")
+            return
+
+        if active_game["status"] != "playing":
+            await message.answer("❌ Game hasn't started yet.")
+            return
+
+        spy = await db.get_spy(active_game["game_id"])
+        if not spy or spy["user_id"] != message.from_user.id:
+            await message.answer("❌ Only the spy can use this command.")
+            return
+
+        keyboard = []
+        row = []
+        for idx, location in enumerate(config.SPYFALL_LOCATIONS):
+            row.append(
+                InlineKeyboardButton(
+                    text=location,
+                    callback_data=f"guess_{active_game['game_id']}_{idx}",
+                )
+            )
+            if len(row) == 2:
+                keyboard.append(row)
+                row = []
+
+        if row:
+            keyboard.append(row)
+
+        await message.answer(
+            "🎯 Choose the location you want to name:",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard),
+        )
 
     @dp.message(Command("vote"))
     async def cmd_vote(message: Message, state: FSMContext):

@@ -63,7 +63,7 @@ def register_message_handlers(dp, bot: Bot, db: Database):
                         message.chat.id,
                         f"✅ Great! You used the word '{word_data['word']}'\n"
                         f"📖 Translation: {translation}\n"
-                        f"🎁 You earned {config.SPYFALL_WORD_PENALTY_POINTS} bonus points!",
+                        f"🎁 You earned {config.SPYFALL_WORD_BONUS_POINTS} bonus points!",
                     )
                 except Exception as e:
                     logger.error(

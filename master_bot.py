@@ -8,6 +8,7 @@ from handlers import mode_switch
 import spyfall
 import speedy_translate
 import words_game
+import standard_mode
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -16,6 +17,7 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
 
     dp.include_router(mode_switch.router)
+    dp.include_router(standard_mode.get_router())
     dp.include_router(speedy_translate.get_router())
     dp.include_router(words_game.get_router(bot))
     dp.include_router(spyfall.get_router(bot))

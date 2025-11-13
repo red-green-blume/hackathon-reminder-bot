@@ -38,7 +38,7 @@ def get_router() -> Router:
     async def start_game(message: Message):
         global game_active, scores, chat_id
         if game_active:
-            await message.reply("Игра уже идет!")
+            await message.reply("The game is already running!")
             return
 
         load_dictionary()
@@ -48,7 +48,7 @@ def get_router() -> Router:
         new_round()
 
         await message.answer(
-            f"Игра началась!\nПереведите слово: <b>{current_word['eng']}</b>",
+            f"The game has started!\nTranslate the word: <b>{current_word['eng']}</b>",
             parse_mode='HTML'
         )
 
@@ -57,7 +57,7 @@ def get_router() -> Router:
         global game_active
 
         if not game_active:
-            await message.reply("Сейчас игра не активна.")
+            await message.reply("The game is not active.")
             return
 
         game_active = False
@@ -70,18 +70,18 @@ def get_router() -> Router:
                     member = await message.bot.get_chat_member(chat_id, user_id)
                     res.append(f"{member.user.first_name}: {score}")
                 except Exception:
-                    res.append(f"Пользователь {user_id}: {score}")
+                    res.append(f"Player {user_id}: {score}")
 
             result_text = "\n".join(res)
             await message.bot.send_message(
                 chat_id,
-                f"Игра остановлена.\n\n<b>Статистика:</b>\n{result_text}",
+                f"The game has been stopped.\n\n<b>Leaderboard:</b>\n{result_text}",
                 parse_mode='HTML'
             )
         else:
             await message.bot.send_message(
                 chat_id,
-                "Игра остановлена. Никто не успел набрать баллы.",
+                "The game has been stopped. Nobody earned any points.",
                 parse_mode='HTML'
             )
 
@@ -101,15 +101,15 @@ def get_router() -> Router:
                     member = await message.bot.get_chat_member(chat_id, uid)
                     leaderboard.append(f"{member.user.first_name}: {score}")
                 except Exception:
-                    leaderboard.append(f"Пользователь {uid}: {score}")
+                    leaderboard.append(f"Player {uid}: {score}")
 
             leaderboard_text = "\n".join(leaderboard)
 
             await message.bot.send_message(
                 chat_id,
-                f"✅ <b>{message.from_user.first_name}</b> получает балл!\n"
-                f"Правильный перевод: <b>{current_word['eng']}</b> — <b>{current_word['rus']}</b>\n\n"
-                f"Текущее лидерство:\n{leaderboard_text}",
+                f"✅ <b>{message.from_user.first_name}</b> scores a point!\n"
+                f"Correct translation: <b>{current_word['eng']}</b> — <b>{current_word['rus']}</b>\n\n"
+                f"Current standings:\n{leaderboard_text}",
                 parse_mode='HTML'
             )
 
@@ -117,7 +117,7 @@ def get_router() -> Router:
 
             await message.bot.send_message(
                 chat_id,
-                f"Следующее слово:\nПереведите: <b>{current_word['eng']}</b>",
+                f"Next word:\nTranslate: <b>{current_word['eng']}</b>",
                 parse_mode='HTML'
             )
 

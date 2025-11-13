@@ -26,7 +26,7 @@ def get_router(bot):
     router.startup.register(on_startup)
 
     register_commands(router, bot, db, game_manager, dict_instance, timer)
-    register_callbacks(router, bot, db, game_manager)
+    register_callbacks(router, bot, db, game_manager, timer)
     register_message_handlers(router, bot, db)
 
     return router

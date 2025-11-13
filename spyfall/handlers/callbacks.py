@@ -2,13 +2,16 @@ import logging
 from aiogram import Bot, F
 from aiogram.types import CallbackQuery, PollAnswer
 from spyfall.database import Database
-from spyfall.handlers.voting import finish_voting
+from spyfall.handlers.voting import finish_voting, apply_game_results
 from spyfall.game import GameManager
+import config
 
 logger = logging.getLogger(__name__)
 
 
-def register_callbacks(dp, bot: Bot, db: Database, game_manager: GameManager):
+def register_callbacks(
+    dp, bot: Bot, db: Database, game_manager: GameManager, timer=None
+):
     """Register callback handlers"""
 
     @dp.poll_answer()
@@ -49,7 +52,12 @@ def register_callbacks(dp, bot: Bot, db: Database, game_manager: GameManager):
                     f"All players voted in game {game['game_id']}, finishing voting automatically"
                 )
                 await finish_voting(
-                    bot, db, game_manager, game["game_id"], game["chat_id"]
+                    bot,
+                    db,
+                    game_manager,
+                    game["game_id"],
+                    game["chat_id"],
+                    timer=timer,
                 )
 
     @dp.callback_query(F.data.startswith("ask_"))
@@ -97,3 +105,84 @@ def register_callbacks(dp, bot: Bot, db: Database, game_manager: GameManager):
 
         await callback.message.edit_text(f"✅ You chose to ask {target_name}!")
         await callback.answer()
+
+    @dp.callback_query(F.data.startswith("guess_"))
+    async def process_guess(callback: CallbackQuery):
+        """Process spy location guess"""
+        try:
+            parts = callback.data.split("_")
+            if len(parts) != 3:
+                await callback.answer("❌ Invalid data.", show_alert=True)
+                return
+
+            game_id = int(parts[1])
+            location_idx = int(parts[2])
+
+            active_game = await db.get_active_game(callback.message.chat.id)
+            if not active_game or active_game["game_id"] != game_id:
+                await callback.answer("❌ Game not found.", show_alert=True)
+                return
+
+            if active_game["status"] != "playing":
+                await callback.answer("❌ Game is not active.", show_alert=True)
+                return
+
+            spy = await db.get_spy(game_id)
+            if not spy or spy["user_id"] != callback.from_user.id:
+                await callback.answer("❌ Only the spy can guess!", show_alert=True)
+                return
+
+            if location_idx < 0 or location_idx >= len(config.SPYFALL_LOCATIONS):
+                await callback.answer("❌ Unknown location.", show_alert=True)
+                return
+
+            game = await db.get_game(game_id)
+            if not game or game["status"] != "playing":
+                await callback.answer("❌ Game is not active.", show_alert=True)
+                return
+
+            guessed_location = config.SPYFALL_LOCATIONS[location_idx]
+            actual_location = game["location"]
+
+            try:
+                user = await bot.get_chat_member(
+                    callback.message.chat.id, callback.from_user.id
+                )
+                spy_name = user.user.first_name
+            except Exception:
+                spy_name = callback.from_user.username or "Unknown"
+
+            guess_correct = guessed_location == actual_location
+
+            result_text = (
+                f"🎭 Spy {spy_name} decided to guess the location!\n"
+                f"🗺️ Guess: {guessed_location}\n"
+            )
+
+            if guess_correct:
+                result_text += "✅ Correct guess! The spy wins!\n"
+            else:
+                result_text += "❌ Wrong guess! Civilians win!\n"
+
+            result_text += f"📍 Actual location: {actual_location}"
+
+            await callback.message.edit_text(
+                f"✅ You selected: {guessed_location}"
+            )
+            await bot.send_message(callback.message.chat.id, result_text)
+
+            await apply_game_results(
+                bot,
+                db,
+                game_manager,
+                game_id,
+                spy_won=guess_correct,
+                civilians_won=not guess_correct,
+                timer=timer,
+            )
+
+            await callback.answer("✅ Guess processed!")
+
+        except Exception as e:
+            logger.error(f"Error processing guess callback: {e}")
+            await callback.answer("❌ Error processing guess.", show_alert=True)

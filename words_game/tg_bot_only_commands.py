@@ -29,11 +29,11 @@ active_games = {}
 async def update_lobby_message(chat_id, game):
     players_list = "\n".join([f"👤 {name}" for name in game["players"].values()])
     message_text = (
-        f"🎮 Игра #{game['session_id']} создана!\n"
-        f"Ожидаем игроков...\n\n"
-        f"Участники ({len(game['players'])}):\n{players_list}\n\n"
-        f"Другие игроки могут присоединиться командой /join\n"
-        f"Создатель может запустить игру командой /startgame"
+        f"🎮 Game #{game['session_id']} created!\n"
+        f"Waiting for players...\n\n"
+        f"Players ({len(game['players'])}):\n{players_list}\n\n"
+        f"Others can join with /join\n"
+        f"The creator can start the game with /startgame"
     )
 
     try:
@@ -46,7 +46,7 @@ async def update_lobby_message(chat_id, game):
             game["lobby_message_id"] = message.message_id
 
     except Exception as e:
-        # print(f"Ошибка при обновлении лобби: {e}")
+        # print(f"Failed to update lobby message: {e}")
         message = await bott.send_message(chat_id, message_text)
         game["lobby_message_id"] = message.message_id
 
@@ -68,7 +68,7 @@ async def announce_winner(db_name, session_id, current_chat_id, bot):
 
         if not game_data:
             await bot.send_message(
-                current_chat_id, "❌ Не удалось найти данные об игре."
+                current_chat_id, "❌ Unable to find game data."
             )
             return
 
@@ -82,7 +82,7 @@ async def announce_winner(db_name, session_id, current_chat_id, bot):
             )
             winner_name = cursor.fetchone()
             winner_name = (
-                winner_name[0] if winner_name else f"Игрок {last_word_user_id}"
+                winner_name[0] if winner_name else f"Player {last_word_user_id}"
             )
 
             cursor.execute(
@@ -98,17 +98,17 @@ async def announce_winner(db_name, session_id, current_chat_id, bot):
 
             await bot.send_message(
                 current_chat_id,
-                f"🏆 Игра завершена!\n\n"
-                f"Победитель: {winner_name} 🎉\n"
-                f"Последний назвавший слово становится чемпионом!",
+                f"🏆 Game finished!\n\n"
+                f"Winner: {winner_name} 🎉\n"
+                f"The last player to give a word becomes the champion!",
             )
         else:
             await bot.send_message(
-                current_chat_id, "К сожалению, победитель не определен."
+                current_chat_id, "Unfortunately, no winner was determined."
             )
 
     except Exception as e:
-        # print(f"Ошибка при объявлении победителя: {e}")
+        # print(f"Failed to announce winner: {e}")
         conn.rollback()
     finally:
         conn.close()
@@ -136,22 +136,22 @@ def get_router(bot):
         add_or_update_user(DB_NAME, user_id, username)
 
         help_text = (
-            "Привет! Я бот для игры в слова! 🎮\n\n"
-            "📋 Доступные команды:\n"
-            "/newgame - Создать новую игру\n"
-            "/join - Присоединиться к игре\n"
-            "/startgame - Запустить игру (только создатель игры)\n"
-            "/stop - Завершить игру (только создатель игры)\n"
-            "/rating - Показать рейтинг\n"
-            "/leave - Покинуть игру\n\n"
-            "Как играть:\n"
-            "1. Создатель пишет /newgame\n"
-            "2. Другие игроки пишут /join\n"
-            "3. Создатель пишет /startgame\n"
-            "4. Игроки по очереди называют слова\n"
-            "5. Слово должно начинаться на последнюю букву предыдущего\n"
-            "6. Создатель пишет /stop чтобы завершить игру\n"
-            "7. Игра автоматически завершается через 10 минут после начала\n"
+            "Hi! I'm the word chain bot 🎮\n\n"
+            "📋 Available commands:\n"
+            "/newgame - Create a new game\n"
+            "/join - Join the current game\n"
+            "/startgame - Start the game (creator only)\n"
+            "/stop - End the game (creator only)\n"
+            "/rating - Show the leaderboard\n"
+            "/leave - Leave the game\n\n"
+            "How to play:\n"
+            "1. The creator runs /newgame\n"
+            "2. Others join with /join\n"
+            "3. The creator runs /startgame\n"
+            "4. Players take turns naming words\n"
+            "5. Each word must start with the last letter of the previous word\n"
+            "6. The creator can end the game with /stop\n"
+            "7. The game auto-ends 10 minutes after it starts\n"
         )
 
         await message.answer(help_text)
@@ -166,7 +166,7 @@ def get_router(bot):
         add_or_update_user(DB_NAME, user_id, username)
 
         if chat_id in active_games:
-            await message.answer("❌ В этом чате уже есть активная игра!")
+            await message.answer("❌ There is already an active game in this chat!")
             return
 
         await state.clear()
@@ -198,12 +198,12 @@ def get_router(bot):
         try:
             await message.delete()
         except Exception as e:
-            # print(f"Не удалось удалить сообщение: {e}")
+            # print(f"Could not delete message: {e}")
             pass
 
         if chat_id not in active_games:
             response = await message.answer(
-                "❌ В этом чате нет активной игры. Создайте игру командой /newgame"
+                "❌ No active game in this chat. Create one with /newgame."
             )
             await asyncio.sleep(3)
             try:
@@ -225,7 +225,7 @@ def get_router(bot):
         add_game_player("words_game/words_game.db", session_id, user_id, order_join)
 
         confirmation = await message.answer(
-            f"✅ {message.from_user.full_name} присоединился к игре!"
+            f"✅ {message.from_user.full_name} joined the game!"
         )
 
         await asyncio.sleep(1.5)
@@ -246,13 +246,13 @@ def get_router(bot):
         add_or_update_user(DB_NAME, user_id, username)
 
         if chat_id not in active_games:
-            await message.answer("❌ Игра не найдена!")
+            await message.answer("❌ Game not found!")
             return
 
         game = active_games[chat_id]
 
         if user_id != game["creator_id"]:
-            await message.answer("❌ Только создатель игры может запустить её.")
+            await message.answer("❌ Only the game creator can start the game.")
             return
 
         session_id = game["session_id"]
@@ -266,13 +266,13 @@ def get_router(bot):
         conn.close()
 
         if not result:
-            await message.answer("❌ Ошибка: игра не найдена в базе")
+            await message.answer("❌ Error: game not found in the database.")
             return
 
         status = result[0]
 
         if status == "started":
-            await message.answer("❌ Игра уже запущена!")
+            await message.answer("❌ The game is already running!")
             return
 
         update_game_start(DB_NAME, session_id)
@@ -288,14 +288,14 @@ def get_router(bot):
             try:
                 await bot.delete_message(chat_id, game["lobby_message_id"])
             except Exception as e:
-                # print(f"Не удалось удалить сообщение лобби: {e}")
+                # print(f"Could not delete lobby message: {e}")
                 pass
 
         await message.answer(
-            f"🚀 Игра началась!\n\n"
-            f"Первое слово: {start_word} - {translation}\n\n"
-            f"🎯 Следующий ход: {next_player_name}\n\n"
-            f"Игроки пишут слова в чат. Слово должно начинаться на последнюю букву предыдущего слова."
+            f"🚀 The game has started!\n\n"
+            f"First word: {start_word} - {translation}\n\n"
+            f"🎯 Next turn: {next_player_name}\n\n"
+            f"Players type words in the chat. Each word must start with the final letter of the previous word."
         )
 
         active_games[chat_id]["current_player"] = next_player_id
@@ -307,20 +307,20 @@ def get_router(bot):
         user_id = message.from_user.id
 
         if chat_id not in active_games:
-            await message.answer("❌ В этом чате нет активной игры.")
+            await message.answer("❌ There is no active game in this chat.")
             return
 
         game = active_games[chat_id]
 
         if user_id != game["creator_id"]:
-            await message.answer("❌ Только создатель игры может завершить её.")
+            await message.answer("❌ Only the game creator can end the game.")
             return
 
         session_id = game["session_id"]
 
         session_status = get_session_status(DB_NAME, session_id)
         if session_status == "finished":
-            await message.answer("❌ Игра уже завершена.")
+            await message.answer("❌ The game has already finished.")
             return
 
         update_game_finish("words_game/words_game.db", session_id)
@@ -329,7 +329,7 @@ def get_router(bot):
 
         del active_games[chat_id]
 
-        await message.answer("🛑 Игра завершена создателем.")
+        await message.answer("🛑 The game was ended by the creator.")
 
     @router.message(Command("rating"))
     async def cmd_rating(message: types.Message):
@@ -355,20 +355,20 @@ def get_router(bot):
             leaders = cursor.fetchall()
 
             if leaders:
-                rating_text = "🏆 Топ игроков этого чата:\n\n"
+                rating_text = "🏆 Top players in this chat:\n\n"
 
                 for i, (username, score, games_played) in enumerate(leaders, 1):
                     win_rate = (score / games_played * 100) if games_played > 0 else 0
-                    rating_text += f"{i}. {username} - {score} побед ({games_played} игр, {win_rate:.1f}%)\n"
+                    rating_text += f"{i}. {username} - {score} wins ({games_played} games, {win_rate:.1f}%)\n"
 
             else:
-                rating_text = "📊 Рейтинг пуст\n\nВ этом чате еще не было игр."
+                rating_text = "📊 Leaderboard is empty.\n\nNo games have been played in this chat yet."
 
             await message.answer(rating_text)
 
         except Exception as e:
-            # print(f"Ошибка при загрузке рейтинга: {e}")
-            await message.answer("❌ Ошибка при загрузке рейтинга.")
+            # print(f"Failed to load leaderboard: {e}")
+            await message.answer("❌ Failed to load the leaderboard.")
         finally:
             conn.close()
 
@@ -380,11 +380,11 @@ def get_router(bot):
         try:
             await message.delete()
         except Exception as e:
-            # print(f"Не удалось удалить сообщение: {e}")
+            # print(f"Could not delete message: {e}")
             pass
 
         if chat_id not in active_games:
-            response = await message.answer("❌ В этом чате нет активной игры.")
+            response = await message.answer("❌ There is no active game in this chat.")
             await asyncio.sleep(3)
             try:
                 await response.delete()
@@ -393,7 +393,7 @@ def get_router(bot):
             return
 
         if user_id not in active_games[chat_id]["players"]:
-            response = await message.answer("❌ Вы не участвуете в этой игре.")
+            response = await message.answer("❌ You are not part of this game.")
             await asyncio.sleep(3)
             try:
                 await response.delete()
@@ -405,7 +405,7 @@ def get_router(bot):
         session_id = game["session_id"]
         session_status = get_session_status(DB_NAME, session_id)
 
-        await message.answer(f"🚪 {message.from_user.full_name} вышел из игры")
+        await message.answer(f"🚪 {message.from_user.full_name} left the game.")
 
         deactivate_game_player("words_game/words_game.db", session_id, user_id)
 
@@ -418,7 +418,7 @@ def get_router(bot):
             if next_player_id:
                 next_player_name = get_player_name(DB_NAME, next_player_id)
                 await message.answer(
-                    f"🎯 Игрок вышел из игры. Следующий ход: {next_player_name}"
+                    f"🎯 Player left the game. Next turn: {next_player_name}"
                 )
 
         if len(game["players"]) == 0:
@@ -427,7 +427,7 @@ def get_router(bot):
 
             del active_games[chat_id]
 
-            await message.answer("🛑 Игра завершена (все игроки вышли)")
+            await message.answer("🛑 Game ended (all players left).")
 
         else:
             if session_status == "waiting":
@@ -439,17 +439,17 @@ def get_router(bot):
         user_id = message.from_user.id
 
         if chat_id not in active_games:
-            await message.answer("Игра не активна")
+            await message.answer("The game is not active.")
             return
 
         game = active_games[chat_id]
         session_status = get_session_status(DB_NAME, game["session_id"])
         if session_status != "started":
-            await message.answer("Игра еще не начата или уже завершена")
+            await message.answer("The game hasn't started yet or is already finished.")
             return
 
         if user_id != game.get("current_player"):
-            await message.answer(f"Сейчас не ваш ход! Ждите своей очереди.")
+            await message.answer("It's not your turn! Please wait for your turn.")
             return
 
         word = message.text.strip().lower()
@@ -458,14 +458,14 @@ def get_router(bot):
             last_letter = game["last_word"][-1]
             if not word.startswith(last_letter):
                 await message.answer(
-                    f"❌ Слово должно начинаться на букву '{last_letter.upper()}'!"
+                    f"❌ The word must start with the letter '{last_letter.upper()}'."
                 )
                 return
 
         translation = check_word_exists(DB_NAME, word)
         if not translation:
             await message.answer(
-                "❌ Это слово не найдено в словаре! Попробуйте другое слово."
+                "❌ This word is not in the dictionary. Try another one."
             )
             return
 
@@ -480,8 +480,8 @@ def get_router(bot):
         game["current_player"] = next_player_id
 
         await message.answer(
-            f"✅ Слово принято: {word} - {translation}\n\n"
-            f"🎯 Следующий ход: {next_player_name}"
+            f"✅ Word accepted: {word} - {translation}\n\n"
+            f"🎯 Next turn: {next_player_name}"
         )
 
     @router.message()
@@ -524,19 +524,19 @@ async def check_expired_games_periodically():
                 if winner_name:
                     await bott.send_message(
                         chat_id,
-                        f"⏰ Время вышло! Игра автоматически завершена.\n\n"
-                        f"Победитель: {winner_name} 🎉\n"
-                        f"Игра длилась более 10 минут.",
+                        f"⏰ Time is up! The game ended automatically.\n\n"
+                        f"Winner: {winner_name} 🎉\n"
+                        f"The game lasted more than 10 minutes.",
                     )
                 else:
                     await bott.send_message(
                         chat_id,
-                        "⏰ Время вышло! Игра автоматически завершена.\n\n"
-                        "Игра длилась более 10 минут.",
+                        "⏰ Time is up! The game ended automatically.\n\n"
+                        "The game lasted more than 10 minutes.",
                     )
 
         except Exception as e:
-            # print(f"Ошибка в проверке просроченных игр: {e}")
+            # print(f"Error while checking expired games: {e}")
             pass
 
         await asyncio.sleep(60)

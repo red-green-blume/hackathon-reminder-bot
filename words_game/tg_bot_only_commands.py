@@ -128,7 +128,7 @@ def get_router(bot):
     create_database("words_game/words_game.db")
     create_tables("words_game/words_game.db")
 
-    @router.message(Command("/start"))
+    @router.message(Command("start"))
     async def cmd_start(message: types.Message):
 
         user_id = message.from_user.id

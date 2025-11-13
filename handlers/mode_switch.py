@@ -12,7 +12,8 @@ async def choose_mode(message: types.Message):
             [types.KeyboardButton(text="📚 Слова")],
             [types.KeyboardButton(text="❓ Кто быстрее")],
         ],
-        resize_keyboard=True
+        resize_keyboard=True,
+        one_time_keyboard=True,
     )
     await message.answer("Выбери режим:", reply_markup=keyboard)
 

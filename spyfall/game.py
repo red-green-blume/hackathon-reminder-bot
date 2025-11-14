@@ -51,9 +51,7 @@ class GameManager:
 
         return {"game": game, "players": players, "spy": spy}
 
-    async def get_location_for_player(
-        self, game_id: int, user_id: int
-    ) -> Optional[str]:
+    async def get_location_for_player(self, game_id: int, user_id: int) -> Optional[str]:
         """Get location for player (or None if they are spy)"""
         game = await self.db.get_game(game_id)
         if not game or game["status"] != "playing":

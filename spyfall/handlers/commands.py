@@ -1,13 +1,17 @@
 import logging
+
 from aiogram import Bot
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
-from spyfall.handlers.timer import GameTimer
-from spyfall.database import Database
-from spyfall.game import GameManager
-from spyfall.dictionary import Dictionary
 from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+
 import config
+
+from spyfall.database import Database
+from spyfall.dictionary import Dictionary
+from spyfall.game import GameManager
+from spyfall.handlers.timer import GameTimer
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +19,15 @@ MODE_NAME = "spy"
 
 
 def register_commands(
-    dp, bot: Bot, db: Database, game_manager: GameManager, dictionary: Dictionary, timer: GameTimer = None,
+    dp,
+    bot: Bot,
+    db: Database,
+    game_manager: GameManager,
+    dictionary: Dictionary,
+    timer: GameTimer = None,
 ):
     @dp.message(Command("start"))
     async def cmd_start(message: Message, state: FSMContext):
-
         """Start command"""
         await message.answer(
             "🎮 Welcome to Spyfall game!\n\n"
@@ -40,7 +48,6 @@ def register_commands(
 
     @dp.message(Command("newgame"))
     async def cmd_newgame(message: Message, state: FSMContext):
-
         """Create a new game"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -67,7 +74,6 @@ def register_commands(
 
     @dp.message(Command("join"))
     async def cmd_join(message: Message, state: FSMContext):
-
         """Join the game"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -100,7 +106,6 @@ def register_commands(
 
     @dp.message(Command("startgame"))
     async def cmd_startgame(message: Message, state: FSMContext):
-
         """Start the game"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -131,9 +136,7 @@ def register_commands(
         for player in players:
             try:
                 words = await dictionary.get_random_words(config.SPYFALL_WORDS_PER_PLAYER)
-                await db.add_player_words(
-                    active_game["game_id"], player["user_id"], words
-                )
+                await db.add_player_words(active_game["game_id"], player["user_id"], words)
 
                 words_text = "\n".join(
                     [f"  • {word} - {translation}" for word, translation in words]
@@ -157,13 +160,9 @@ def register_commands(
                         f"💡 Try to use these words naturally in your questions and answers!",
                     )
             except Exception as e:
-                logger.error(
-                    f"Error sending message to player {player['user_id']}: {e}"
-                )
+                logger.error(f"Error sending message to player {player['user_id']}: {e}")
 
-        current_player = next(
-            (p for p in players if p["user_id"] == current_player_id), None
-        )
+        current_player = next((p for p in players if p["user_id"] == current_player_id), None)
         if current_player:
             try:
                 user = await bot.get_chat_member(message.chat.id, current_player_id)
@@ -189,7 +188,6 @@ def register_commands(
 
     @dp.message(Command("gameinfo"))
     async def cmd_gameinfo(message: Message, state: FSMContext):
-
         """Game information"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -217,7 +215,6 @@ def register_commands(
 
     @dp.message(Command("mylocation"))
     async def cmd_mylocation(message: Message, state: FSMContext):
-
         """Check your location"""
         active_game = await db.get_active_game(message.chat.id)
         if not active_game:
@@ -237,13 +234,10 @@ def register_commands(
                 message.from_user.id, "🎭 You are the SPY! You don't know the location."
             )
         else:
-            await bot.send_message(
-                message.from_user.id, f"📍 Your location: {location}"
-            )
+            await bot.send_message(message.from_user.id, f"📍 Your location: {location}")
 
     @dp.message(Command("ask"))
     async def cmd_ask(message: Message, state: FSMContext):
-
         """Choose who to ask a question"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -299,7 +293,6 @@ def register_commands(
 
     @dp.message(Command("answer"))
     async def cmd_answer(message: Message, state: FSMContext):
-
         """Answer that you've been asked"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -370,7 +363,6 @@ def register_commands(
 
     @dp.message(Command("guess"))
     async def cmd_guess(message: Message, state: FSMContext):
-
         """Allow spy to guess the location"""
         if message.chat.type == "private":
             await message.answer("❌ This command is available only in group chats!")
@@ -413,7 +405,6 @@ def register_commands(
 
     @dp.message(Command("vote"))
     async def cmd_vote(message: Message, state: FSMContext):
-
         """Start voting with poll"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -487,7 +478,6 @@ def register_commands(
 
     @dp.message(Command("endgame"))
     async def cmd_endgame(message: Message, state: FSMContext):
-
         """End the game"""
         if message.chat.type == "private":
             await message.answer("❌ This game is designed for group chats!")
@@ -506,7 +496,6 @@ def register_commands(
 
     @dp.message(Command("stats"))
     async def cmd_stats(message: Message, state: FSMContext):
-
         """Show player statistics"""
         stats = await db.get_player_stats(message.from_user.id)
 
@@ -519,9 +508,7 @@ def register_commands(
             return
 
         win_rate = (
-            (stats["games_won"] / stats["games_played"] * 100)
-            if stats["games_played"] > 0
-            else 0
+            (stats["games_won"] / stats["games_played"] * 100) if stats["games_played"] > 0 else 0
         )
         spy_win_rate = (
             (stats["spy_wins"] / (stats["spy_wins"] + stats["spy_losses"]) * 100)
@@ -529,11 +516,7 @@ def register_commands(
             else 0
         )
         civilian_win_rate = (
-            (
-                stats["civilian_wins"]
-                / (stats["civilian_wins"] + stats["civilian_losses"])
-                * 100
-            )
+            (stats["civilian_wins"] / (stats["civilian_wins"] + stats["civilian_losses"]) * 100)
             if (stats["civilian_wins"] + stats["civilian_losses"]) > 0
             else 0
         )
@@ -563,7 +546,6 @@ def register_commands(
 
     @dp.message(Command("leaderboard"))
     async def cmd_leaderboard(message: Message, state: FSMContext):
-
         """Show leaderboard"""
         leaderboard = await db.get_leaderboard(limit=10)
 

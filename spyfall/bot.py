@@ -1,13 +1,16 @@
 from aiogram import Router
+
+import config
+
 from filter import ModeFilter
-from .handlers.commands import register_commands
-from .handlers.callbacks import register_callbacks
-from .handlers.messages import register_message_handlers
-from .handlers.timer import GameTimer
+from spyfall import dictionary
 from spyfall.database import Database
 from spyfall.game import GameManager
-import spyfall.dictionary as dictionary
-import config as config
+
+from .handlers.callbacks import register_callbacks
+from .handlers.commands import register_commands
+from .handlers.messages import register_message_handlers
+from .handlers.timer import GameTimer
 
 
 def get_router(bot):
@@ -17,7 +20,9 @@ def get_router(bot):
     db = Database()
     game_manager = GameManager(db)
     timer = GameTimer(bot, db)
-    dict_instance = dictionary.Dictionary(config.SPYFALL_DATABASE_PATH, config.SPYFALL_DICTIONARY_PATH)
+    dict_instance = dictionary.Dictionary(
+        config.SPYFALL_DATABASE_PATH, config.SPYFALL_DICTIONARY_PATH
+    )
 
     async def on_startup():
         await db.init_db()

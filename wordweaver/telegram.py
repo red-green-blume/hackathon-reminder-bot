@@ -10,12 +10,16 @@ from aiogram.enums import ChatType, ParseMode
 from aiogram.filters import Command
 from aiogram.types import Message
 
+from filter import ModeFilter
 from wordweaver.container import CONTAINER
 from wordweaver.entities.player import PlayerEntity
+
 
 if TYPE_CHECKING:
     from wordweaver.executors.session import SessionExecutor
 
+
+MODE: Final[int] = "wordweaver"
 
 LOBBY_TIMEOUT: Final[timedelta] = timedelta(seconds=30.0)
 ROUND_TIMEOUT: Final[timedelta] = timedelta(seconds=15.0)
@@ -51,7 +55,7 @@ class Background:
 
     @classmethod
     async def notify(cls, executor: "SessionExecutor", message: "Message") -> None:
-        """Оповестить о новом раунде."""
+        """Оповестить про новый раунд."""
         coroutine = cls.timer(executor, executor.iteration, message)
         cls.create_task(coroutine)
 
@@ -104,7 +108,7 @@ async def startup() -> None:
     await user_adapter.migrate()
 
 
-@router.message(Command("me", ignore_case=True))
+@router.message(ModeFilter(MODE), Command("me", ignore_case=True))
 async def me(message: "Message") -> None:
     """Отобразить статистику пользователя."""
     user_adapter = CONTAINER.user_adapter()
@@ -127,7 +131,7 @@ async def me(message: "Message") -> None:
         await message.reply(text, parse_mode=ParseMode.MARKDOWN)
 
 
-@router.message(Command("help", ignore_case=True))
+@router.message(ModeFilter(MODE), Command("help", ignore_case=True))
 async def help(message: "Message") -> None:
     """Отобразить подсказку по игре."""
     instruction = (
@@ -161,7 +165,7 @@ async def help(message: "Message") -> None:
     await message.answer(text, parse_mode=ParseMode.MARKDOWN)
 
 
-@router.message(Command("start", ignore_case=True))
+@router.message(ModeFilter(MODE), Command("start", ignore_case=True))
 async def start(message: "Message") -> None:
     """Начать игру."""
     session_adapter = CONTAINER.session_adapter()
@@ -192,7 +196,7 @@ async def start(message: "Message") -> None:
         return
 
     lines = [
-        "📋 <b>+1 Participant</b>",
+        "📋 <b>+1 Participant</b> (/join)",
         "",
         f"-> @{player.username}",
         "",
@@ -206,7 +210,7 @@ async def start(message: "Message") -> None:
     Background.create_task(coroutine)
 
 
-@router.message(Command("join", ignore_case=True))
+@router.message(ModeFilter(MODE), Command("join", ignore_case=True))
 async def join(message: "Message") -> None:
     """Присоединиться к игре."""
     session_adapter = CONTAINER.session_adapter()
@@ -234,7 +238,7 @@ async def join(message: "Message") -> None:
     if not executor.join(player):
         return
 
-    lines = ["📋 <b>+1 Participant</b>", ""]
+    lines = ["📋 <b>+1 Participant</b> (/join)", ""]
     for username in executor.usernames:
         lines.append(f"-> @{username}")
 
@@ -242,13 +246,13 @@ async def join(message: "Message") -> None:
     await message.reply(text, parse_mode=ParseMode.HTML)
 
 
-@router.message(F.text.startswith("/"))
+@router.message(ModeFilter(MODE), F.text.startswith("/"))
 async def unknown_command(message: Message):
     text = "❌ I don't know this command... (/help)"
     await message.reply(text)
 
 
-@router.message(F.text)
+@router.message(ModeFilter(MODE), F.text)
 async def handle(message: "Message") -> None:
     """Обработать текстовое сообщение."""
     english = CONTAINER.english_adapter()

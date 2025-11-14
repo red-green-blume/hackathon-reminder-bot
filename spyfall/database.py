@@ -1,9 +1,11 @@
-import aiosqlite
 import logging
-from typing import Optional, List, Dict
-from datetime import datetime
+
+from typing import Dict, List, Optional
+
+import aiosqlite
 
 import config
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +17,8 @@ class Database:
     async def init_db(self):
         """Initialize database"""
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute("""
+            await db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS games (
                     game_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     chat_id INTEGER NOT NULL,
@@ -28,9 +31,11 @@ class Database:
                     game_duration INTEGER DEFAULT 300,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
-            await db.execute("""
+            await db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS players (
                     player_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     game_id INTEGER NOT NULL,
@@ -39,9 +44,11 @@ class Database:
                     is_spy INTEGER DEFAULT 0,
                     FOREIGN KEY (game_id) REFERENCES games(game_id)
                 )
-            """)
+            """
+            )
 
-            await db.execute("""
+            await db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS votes (
                     vote_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     game_id INTEGER NOT NULL,
@@ -49,9 +56,11 @@ class Database:
                     suspect_id INTEGER NOT NULL,
                     FOREIGN KEY (game_id) REFERENCES games(game_id)
                 )
-            """)
+            """
+            )
 
-            await db.execute("""
+            await db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS player_stats (
                     user_id INTEGER PRIMARY KEY,
                     username TEXT,
@@ -66,9 +75,11 @@ class Database:
                     bonus_points INTEGER DEFAULT 0,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
-            await db.execute("""
+            await db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS player_words (
                     word_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     game_id INTEGER NOT NULL,
@@ -78,15 +89,18 @@ class Database:
                     used INTEGER DEFAULT 0,
                     FOREIGN KEY (game_id) REFERENCES games(game_id)
                 )
-            """)
+            """
+            )
 
-            await db.execute("""
+            await db.execute(
+                """
                 CREATE TABLE IF NOT EXISTS dictionary (
                     word_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     english TEXT NOT NULL UNIQUE,
                     russian TEXT NOT NULL
                 )
-            """)
+            """
+            )
 
             await db.commit()
 
@@ -105,15 +119,11 @@ class Database:
                         logger.info("Added poll_id column to games table")
 
                     if "current_player_id" not in column_names:
-                        await db.execute(
-                            "ALTER TABLE games ADD COLUMN current_player_id INTEGER"
-                        )
+                        await db.execute("ALTER TABLE games ADD COLUMN current_player_id INTEGER")
                         logger.info("Added current_player_id column to games table")
 
                     if "game_start_time" not in column_names:
-                        await db.execute(
-                            "ALTER TABLE games ADD COLUMN game_start_time TIMESTAMP"
-                        )
+                        await db.execute("ALTER TABLE games ADD COLUMN game_start_time TIMESTAMP")
                         logger.info("Added game_start_time column to games table")
 
                     if "game_duration" not in column_names:
@@ -123,9 +133,7 @@ class Database:
                         logger.info("Added game_duration column to games table")
 
                     if "target_player_id" not in column_names:
-                        await db.execute(
-                            "ALTER TABLE games ADD COLUMN target_player_id INTEGER"
-                        )
+                        await db.execute("ALTER TABLE games ADD COLUMN target_player_id INTEGER")
                         logger.info("Added target_player_id column to games table")
 
                 async with db.execute("PRAGMA table_info(player_stats)") as cursor:
@@ -156,9 +164,7 @@ class Database:
         """Get game information"""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute(
-                "SELECT * FROM games WHERE game_id = ?", (game_id,)
-            ) as cursor:
+            async with db.execute("SELECT * FROM games WHERE game_id = ?", (game_id,)) as cursor:
                 row = await cursor.fetchone()
                 return dict(row) if row else None
 
@@ -233,32 +239,24 @@ class Database:
     async def set_poll_id(self, game_id: int, poll_id: str):
         """Set poll ID for game"""
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(
-                "UPDATE games SET poll_id = ? WHERE game_id = ?", (poll_id, game_id)
-            )
+            await db.execute("UPDATE games SET poll_id = ? WHERE game_id = ?", (poll_id, game_id))
             await db.commit()
 
     async def get_game_by_poll_id(self, poll_id: str) -> Optional[Dict]:
         """Get game by poll ID"""
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
-            async with db.execute(
-                "SELECT * FROM games WHERE poll_id = ?", (poll_id,)
-            ) as cursor:
+            async with db.execute("SELECT * FROM games WHERE poll_id = ?", (poll_id,)) as cursor:
                 row = await cursor.fetchone()
                 return dict(row) if row else None
 
     async def finish_game(self, game_id: int):
         """Finish game"""
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(
-                "UPDATE games SET status = 'finished' WHERE game_id = ?", (game_id,)
-            )
+            await db.execute("UPDATE games SET status = 'finished' WHERE game_id = ?", (game_id,))
             await db.commit()
 
-    async def add_player(
-        self, game_id: int, user_id: int, username: str, is_spy: bool = False
-    ):
+    async def add_player(self, game_id: int, user_id: int, username: str, is_spy: bool = False):
         """Add player to game"""
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
@@ -270,9 +268,7 @@ class Database:
     async def set_spy(self, game_id: int, user_id: int):
         """Set player as spy"""
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(
-                "UPDATE players SET is_spy = 0 WHERE game_id = ?", (game_id,)
-            )
+            await db.execute("UPDATE players SET is_spy = 0 WHERE game_id = ?", (game_id,))
 
             await db.execute(
                 "UPDATE players SET is_spy = 1 WHERE game_id = ? AND user_id = ?",

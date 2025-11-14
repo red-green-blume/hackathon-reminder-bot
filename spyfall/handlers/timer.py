@@ -1,8 +1,12 @@
 import asyncio
 import logging
+
 from datetime import datetime, timedelta
+
 from aiogram import Bot
+
 from spyfall.database import Database
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,18 +41,12 @@ class GameTimer:
             start_time_str = game["game_start_time"]
             if isinstance(start_time_str, str):
                 try:
-                    start_time = datetime.fromisoformat(
-                        start_time_str.replace("Z", "+00:00")
-                    )
+                    start_time = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
                 except:
                     try:
-                        start_time = datetime.strptime(
-                            start_time_str, "%Y-%m-%d %H:%M:%S.%f"
-                        )
+                        start_time = datetime.strptime(start_time_str, "%Y-%m-%d %H:%M:%S.%f")
                     except:
-                        start_time = datetime.strptime(
-                            start_time_str, "%Y-%m-%d %H:%M:%S"
-                        )
+                        start_time = datetime.strptime(start_time_str, "%Y-%m-%d %H:%M:%S")
             else:
                 start_time = start_time_str
 

@@ -19,4 +19,3 @@ def get_router() -> Router:
         )
 
     return router
-

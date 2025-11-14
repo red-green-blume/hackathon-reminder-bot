@@ -1,4 +1,3 @@
-
 from typing import Dict
 
 DEFAULT_MODE = "standard"

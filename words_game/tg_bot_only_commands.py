@@ -1,14 +1,13 @@
 import asyncio
 import logging
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters import Command
-from dotenv import load_dotenv
-import os
 
-from aiogram import Router, F
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.fsm.context import FSMContext
 from datetime import datetime
+
+from aiogram import Router, types
+from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
+
 from filter import ModeFilter
 from words_game.work_with_dp import *
 
@@ -16,6 +15,7 @@ from words_game.work_with_dp import *
 MODE_NAME = "words"
 
 bott = None
+
 
 class GameStates(StatesGroup):
     waiting_players = State()
@@ -67,9 +67,7 @@ async def announce_winner(db_name, session_id, current_chat_id, bot):
         game_data = cursor.fetchone()
 
         if not game_data:
-            await bot.send_message(
-                current_chat_id, "❌ Unable to find game data."
-            )
+            await bot.send_message(current_chat_id, "❌ Unable to find game data.")
             return
 
         last_word_user_id, db_chat_id = game_data
@@ -77,13 +75,9 @@ async def announce_winner(db_name, session_id, current_chat_id, bot):
         update_games_played_for_all_players(db_name, session_id, db_chat_id)
 
         if last_word_user_id:
-            cursor.execute(
-                "SELECT username FROM users WHERE tg_id = ?", (last_word_user_id,)
-            )
+            cursor.execute("SELECT username FROM users WHERE tg_id = ?", (last_word_user_id,))
             winner_name = cursor.fetchone()
-            winner_name = (
-                winner_name[0] if winner_name else f"Player {last_word_user_id}"
-            )
+            winner_name = winner_name[0] if winner_name else f"Player {last_word_user_id}"
 
             cursor.execute(
                 """
@@ -103,9 +97,7 @@ async def announce_winner(db_name, session_id, current_chat_id, bot):
                 f"The last player to give a word becomes the champion!",
             )
         else:
-            await bot.send_message(
-                current_chat_id, "Unfortunately, no winner was determined."
-            )
+            await bot.send_message(current_chat_id, "Unfortunately, no winner was determined.")
 
     except Exception as e:
         # print(f"Failed to announce winner: {e}")
@@ -224,9 +216,7 @@ def get_router(bot):
         order_join = len(game["players"])
         add_game_player("words_game/words_game.db", session_id, user_id, order_join)
 
-        confirmation = await message.answer(
-            f"✅ {message.from_user.full_name} joined the game!"
-        )
+        confirmation = await message.answer(f"✅ {message.from_user.full_name} joined the game!")
 
         await asyncio.sleep(1.5)
         try:
@@ -259,9 +249,7 @@ def get_router(bot):
 
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT session_status FROM game_session WHERE id = ?", (session_id,)
-        )
+        cursor.execute("SELECT session_status FROM game_session WHERE id = ?", (session_id,))
         result = cursor.fetchone()
         conn.close()
 
@@ -359,10 +347,14 @@ def get_router(bot):
 
                 for i, (username, score, games_played) in enumerate(leaders, 1):
                     win_rate = (score / games_played * 100) if games_played > 0 else 0
-                    rating_text += f"{i}. {username} - {score} wins ({games_played} games, {win_rate:.1f}%)\n"
+                    rating_text += (
+                        f"{i}. {username} - {score} wins ({games_played} games, {win_rate:.1f}%)\n"
+                    )
 
             else:
-                rating_text = "📊 Leaderboard is empty.\n\nNo games have been played in this chat yet."
+                rating_text = (
+                    "📊 Leaderboard is empty.\n\nNo games have been played in this chat yet."
+                )
 
             await message.answer(rating_text)
 
@@ -417,9 +409,7 @@ def get_router(bot):
 
             if next_player_id:
                 next_player_name = get_player_name(DB_NAME, next_player_id)
-                await message.answer(
-                    f"🎯 Player left the game. Next turn: {next_player_name}"
-                )
+                await message.answer(f"🎯 Player left the game. Next turn: {next_player_name}")
 
         if len(game["players"]) == 0:
             if session_status == "started":
@@ -464,9 +454,7 @@ def get_router(bot):
 
         translation = check_word_exists(DB_NAME, word)
         if not translation:
-            await message.answer(
-                "❌ This word is not in the dictionary. Try another one."
-            )
+            await message.answer("❌ This word is not in the dictionary. Try another one.")
             return
 
         session_id = game["session_id"]
@@ -480,8 +468,7 @@ def get_router(bot):
         game["current_player"] = next_player_id
 
         await message.answer(
-            f"✅ Word accepted: {word} - {translation}\n\n"
-            f"🎯 Next turn: {next_player_name}"
+            f"✅ Word accepted: {word} - {translation}\n\n" f"🎯 Next turn: {next_player_name}"
         )
 
     @router.message()

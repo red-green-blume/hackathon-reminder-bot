@@ -1,7 +1,9 @@
-from aiogram import Router, types, F
+from aiogram import F, Router, types
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from chat_modes import set_chat_mode, DEFAULT_MODE, get_chat_mode
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+
+from chat_modes import DEFAULT_MODE, get_chat_mode, set_chat_mode
+
 
 router = Router()
 
@@ -24,6 +26,10 @@ def _get_mode_keyboard(current_mode: str) -> InlineKeyboardMarkup:
             text=("✅ " if current_mode == "speedy_poll" else "") + "❓ Speedy Translate",
             callback_data="mode_speedy_poll",
         ),
+        InlineKeyboardButton(
+            text=("✅ " if current_mode == "wordweaver" else "") + "📝 Word Weaver",
+            callback_data="mode_wordweaver",
+        ),
     ]
 
     return InlineKeyboardMarkup(
@@ -32,6 +38,7 @@ def _get_mode_keyboard(current_mode: str) -> InlineKeyboardMarkup:
             [buttons[1]],
             [buttons[2]],
             [buttons[3]],
+            [buttons[4]],
         ]
     )
 

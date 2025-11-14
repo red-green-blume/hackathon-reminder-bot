@@ -1,10 +1,14 @@
-import random
 import csv
+import random
+
 from collections import defaultdict
-from aiogram import Router, F
+
+from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
+
 from filter import ModeFilter
+
 
 dictionary = []
 current_word = None
@@ -18,23 +22,23 @@ MODE_NAME = "speedy_poll"
 
 def load_dictionary():
     global dictionary
-    with open('speedy_translate/dictionary.csv', encoding='utf-8') as f:
+    with open("speedy_translate/dictionary.csv", encoding="utf-8") as f:
         reader = csv.reader(f)
         next(reader)
-        dictionary = [{'eng': row[0].strip(), 'rus': row[1].strip()} for row in reader]
+        dictionary = [{"eng": row[0].strip(), "rus": row[1].strip()} for row in reader]
 
 
 def new_round():
     global current_word, current_answers
     current_word = random.choice(dictionary)
-    current_answers = [d['rus'] for d in dictionary if d['eng'] == current_word['eng']]
+    current_answers = [d["rus"] for d in dictionary if d["eng"] == current_word["eng"]]
 
 
 def get_router() -> Router:
     router = Router()
     router.message.filter(ModeFilter("speedy_poll"))
 
-    @router.message(Command('start'))
+    @router.message(Command("start"))
     async def start_game(message: Message):
         global game_active, scores, chat_id
         if game_active:
@@ -49,10 +53,10 @@ def get_router() -> Router:
 
         await message.answer(
             f"The game has started!\nTranslate the word: <b>{current_word['eng']}</b>",
-            parse_mode='HTML'
+            parse_mode="HTML",
         )
 
-    @router.message(Command('stop'))
+    @router.message(Command("stop"))
     async def stop_game(message: Message):
         global game_active
 
@@ -76,13 +80,11 @@ def get_router() -> Router:
             await message.bot.send_message(
                 chat_id,
                 f"The game has been stopped.\n\n<b>Leaderboard:</b>\n{result_text}",
-                parse_mode='HTML'
+                parse_mode="HTML",
             )
         else:
             await message.bot.send_message(
-                chat_id,
-                "The game has been stopped. Nobody earned any points.",
-                parse_mode='HTML'
+                chat_id, "The game has been stopped. Nobody earned any points.", parse_mode="HTML"
             )
 
     @router.message(F.text)
@@ -110,15 +112,13 @@ def get_router() -> Router:
                 f"✅ <b>{message.from_user.first_name}</b> scores a point!\n"
                 f"Correct translation: <b>{current_word['eng']}</b> — <b>{current_word['rus']}</b>\n\n"
                 f"Current standings:\n{leaderboard_text}",
-                parse_mode='HTML'
+                parse_mode="HTML",
             )
 
             new_round()
 
             await message.bot.send_message(
-                chat_id,
-                f"Next word:\nTranslate: <b>{current_word['eng']}</b>",
-                parse_mode='HTML'
+                chat_id, f"Next word:\nTranslate: <b>{current_word['eng']}</b>", parse_mode="HTML"
             )
 
     return router

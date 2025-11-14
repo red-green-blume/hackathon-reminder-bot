@@ -1,9 +1,13 @@
 import logging
 import re
+
 from aiogram import Bot, F
 from aiogram.types import Message
-from spyfall.database import Database
+
 import config
+
+from spyfall.database import Database
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +37,7 @@ def register_message_handlers(dp, bot: Bot, db: Database):
         if message.from_user.id not in [curr_player, target_player]:
             return
 
-        player_words = await db.get_player_words(
-            active_game["game_id"], message.from_user.id
-        )
+        player_words = await db.get_player_words(active_game["game_id"], message.from_user.id)
 
         if not player_words:
             return
@@ -54,9 +56,7 @@ def register_message_handlers(dp, bot: Bot, db: Database):
 
             pattern = r"\b" + re.escape(word) + r"\b"
             if re.search(pattern, text_lower):
-                await db.mark_word_used(
-                    active_game["game_id"], message.from_user.id, word
-                )
+                await db.mark_word_used(active_game["game_id"], message.from_user.id, word)
 
                 try:
                     await bot.send_message(
@@ -66,6 +66,4 @@ def register_message_handlers(dp, bot: Bot, db: Database):
                         f"🎁 You earned {config.SPYFALL_WORD_BONUS_POINTS} bonus points!",
                     )
                 except Exception as e:
-                    logger.error(
-                        f"Error sending word notification to {message.from_user.id}: {e}"
-                    )
+                    logger.error(f"Error sending word notification to {message.from_user.id}: {e}")

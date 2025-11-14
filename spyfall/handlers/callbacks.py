@@ -1,17 +1,19 @@
 import logging
+
 from aiogram import Bot, F
 from aiogram.types import CallbackQuery, PollAnswer
-from spyfall.database import Database
-from spyfall.handlers.voting import finish_voting, apply_game_results
-from spyfall.game import GameManager
+
 import config
+
+from spyfall.database import Database
+from spyfall.game import GameManager
+from spyfall.handlers.voting import apply_game_results, finish_voting
+
 
 logger = logging.getLogger(__name__)
 
 
-def register_callbacks(
-    dp, bot: Bot, db: Database, game_manager: GameManager, timer=None
-):
+def register_callbacks(dp, bot: Bot, db: Database, game_manager: GameManager, timer=None):
     """Register callback handlers"""
 
     @dp.poll_answer()
@@ -42,9 +44,7 @@ def register_callbacks(
 
             await game_manager.vote(game["game_id"], user_id, suspect_id)
 
-            logger.info(
-                f"User {user_id} voted for {suspect_id} in game {game['game_id']}"
-            )
+            logger.info(f"User {user_id} voted for {suspect_id} in game {game['game_id']}")
 
             all_voters = await db.get_all_voters(game["game_id"])
             if len(all_voters) >= len(players):
@@ -82,9 +82,7 @@ def register_callbacks(
             return
 
         try:
-            asker_user = await bot.get_chat_member(
-                callback.message.chat.id, callback.from_user.id
-            )
+            asker_user = await bot.get_chat_member(callback.message.chat.id, callback.from_user.id)
             asker_name = asker_user.user.first_name
         except:
             asker_name = callback.from_user.username or "Unknown"
@@ -145,9 +143,7 @@ def register_callbacks(
             actual_location = game["location"]
 
             try:
-                user = await bot.get_chat_member(
-                    callback.message.chat.id, callback.from_user.id
-                )
+                user = await bot.get_chat_member(callback.message.chat.id, callback.from_user.id)
                 spy_name = user.user.first_name
             except Exception:
                 spy_name = callback.from_user.username or "Unknown"
@@ -166,9 +162,7 @@ def register_callbacks(
 
             result_text += f"📍 Actual location: {actual_location}"
 
-            await callback.message.edit_text(
-                f"✅ You selected: {guessed_location}"
-            )
+            await callback.message.edit_text(f"✅ You selected: {guessed_location}")
             await bot.send_message(callback.message.chat.id, result_text)
 
             await apply_game_results(

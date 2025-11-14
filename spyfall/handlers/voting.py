@@ -1,9 +1,14 @@
 import logging
+
 from typing import List, Optional
+
 from aiogram import Bot
+
+import config
+
 from spyfall.database import Database
 from spyfall.game import GameManager
-import config
+
 
 logger = logging.getLogger(__name__)
 
@@ -46,14 +51,10 @@ async def apply_game_results(
                     elif spy_won:
                         rating_change = -10
 
-                used_words_count = await db.get_used_words_count(
-                    game_id, player["user_id"]
-                )
+                used_words_count = await db.get_used_words_count(game_id, player["user_id"])
 
                 if used_words_count > 0:
-                    word_bonus = (
-                        used_words_count * config.SPYFALL_WORD_BONUS_POINTS
-                    )
+                    word_bonus = used_words_count * config.SPYFALL_WORD_BONUS_POINTS
                 else:
                     word_bonus = config.SPYFALL_WORD_PENALTY_POINTS
 
@@ -84,9 +85,7 @@ async def apply_game_results(
                             f"⚠️ Penalty: {word_bonus} points",
                         )
                 except Exception as e:
-                    logger.error(
-                        f"Error sending word summary to {player['user_id']}: {e}"
-                    )
+                    logger.error(f"Error sending word summary to {player['user_id']}: {e}")
 
         await game_manager.finish_game(game_id)
         return True
@@ -118,9 +117,7 @@ async def finish_voting(
             return False
 
         max_votes = max(votes.values())
-        suspects = [
-            suspect_id for suspect_id, count in votes.items() if count == max_votes
-        ]
+        suspects = [suspect_id for suspect_id, count in votes.items() if count == max_votes]
 
         spy = await db.get_spy(game_id)
         spy_id = spy["user_id"] if spy else None

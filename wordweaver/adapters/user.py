@@ -18,6 +18,7 @@ class UserAdapter:
         self._migrated_flg = False
 
     async def migrate(self) -> None:
+        """Накатить миграцию."""
         query = """
             CREATE TABLE IF NOT EXISTS user
             (

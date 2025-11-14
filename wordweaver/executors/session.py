@@ -2,6 +2,7 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
     from wordweaver.adapters.english import EnglishAdapter
     from wordweaver.entities.player import PlayerEntity
@@ -15,14 +16,14 @@ class SessionExecutor:
 
     def __post_init__(self) -> None:
         """Инициализация объекта."""
-        self._players: dict[int, "PlayerEntity"] = {}
+        self._players: dict[int, PlayerEntity] = {}
         self._started_flg: bool = False
         self._iteration: int = 0
         self._letters = self._english.random_letters()
         self._used_words: set[str] = set()
 
     def is_started(self) -> bool:
-        """Проверить, начата игра.  """
+        """Проверить, начата игра."""
         return self._started_flg
 
     def join(self, player: "PlayerEntity") -> bool:
@@ -53,8 +54,7 @@ class SessionExecutor:
         """Узнать, кто сейчас отвечает."""
         players = [player for player in self._players.values() if not player.eliminated_flg]
         index = self._iteration % len(players)
-        player = players[index]
-        return player
+        return players[index]
 
     def what(self) -> list[str]:
         """Узнать, что отгадывают."""

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from os import PathLike
-from random import sample, randint
+from random import randint, sample
 from typing import ClassVar
 
 from utils.basedir import BASEDIR

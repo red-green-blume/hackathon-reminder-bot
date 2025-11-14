@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from wordweaver.executors.session import SessionExecutor
 
+
 if TYPE_CHECKING:
     from wordweaver.adapters.english import EnglishAdapter
 
@@ -15,7 +16,7 @@ class SessionAdapter:
 
     def __post_init__(self) -> None:
         """Инициализация объекта."""
-        self._executors: dict[int, "SessionExecutor"] = {}
+        self._executors: dict[int, SessionExecutor] = {}
 
     def has(self, chat_id: int) -> bool:
         """Проверить наличие сессий."""

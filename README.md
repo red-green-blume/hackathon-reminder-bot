@@ -43,5 +43,5 @@ $ source .venv/bin/activate
 $ pip install -r requirements.txt
 $ BOT_TOKEN=... python -m master_bot
 ```
-[Презентация](https://disk.yandex.ru/i/gkXIs3YFjalO7A)
+[Презентация](https://disk.yandex.ru/d/f7A9C0ngJOUiOw)
 

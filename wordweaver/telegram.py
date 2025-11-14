@@ -86,7 +86,7 @@ class Background:
 
         await user_adapter.progress(player.id, player.streak)
 
-        text = f"☠ You clock is up, @{player.username}!"
+        text = f"☠ You time is up, @{player.username}!"
         await message.answer(text)
 
         if executor.is_alive():

@@ -9,6 +9,8 @@ import spyfall
 import speedy_translate
 import words_game
 import standard_mode
+import wordweaver
+
 
 async def main():
     logging.basicConfig(level=logging.INFO)
@@ -21,8 +23,10 @@ async def main():
     dp.include_router(speedy_translate.get_router())
     dp.include_router(words_game.get_router(bot))
     dp.include_router(spyfall.get_router(bot))
+    dp.include_router(wordweaver.router)
 
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

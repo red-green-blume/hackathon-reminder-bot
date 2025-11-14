@@ -9,6 +9,7 @@ async-timeout==5.0.1
 attrs==25.4.0
 certifi==2025.11.12
 dotenv==0.9.9
+dependency-injector==4.48.2
 frozenlist==1.8.0
 idna==3.11
 magic-filter==1.0.12
